@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Add Cube at 3D Cursor with Update Feature",
     "blender": (2, 80, 0),
-    "version": (1, 0, 0),
+    "version": (1, 1, 0),
     "category": "Object",
     "description": "Addon to add a cube at the 3D cursor with update feature",
 }
