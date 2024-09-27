@@ -1,9 +1,9 @@
 bl_info = {
-    "name": "Add Cube and Sphere at 3D Cursor with Update Feature",
+    "name": "Add Cube, Sphere, and Ico Sphere with Update Feature",
     "blender": (2, 80, 0),  # Minimum Blender version supported
-    "version": (1, 1, 1),   # Current version is 1.1.0
+    "version": (1, 2, 0),   # Updated version to 1.2
     "category": "Object",
-    "description": "Addon to add a cube or sphere at the 3D cursor with update feature",
+    "description": "Addon to add a cube, sphere, and ico sphere at the 3D cursor with update feature",
 }
 
 import bpy
@@ -16,6 +16,12 @@ ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-up
 
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
+
+    auto_update: bpy.props.BoolProperty(
+        name="Auto Update",
+        description="Automatically update the addon when a new version is available",
+        default=False
+    )
 
     check_interval: bpy.props.EnumProperty(
         name="Check for Updates",
@@ -32,7 +38,10 @@ class AddonPreferences(bpy.types.AddonPreferences):
     def draw(self, context):
         layout = self.layout
         layout.label(text="Update Preferences")
+        layout.prop(self, "auto_update")
         layout.prop(self, "check_interval")
+        if not self.auto_update:
+            layout.operator("preferences.update_to_latest_version", text="Update to Latest Version", icon='FILE_REFRESH')
         layout.operator("preferences.check_for_update", text="Check for Updates")
 
 class OBJECT_OT_add_cube_at_cursor(bpy.types.Operator):
@@ -55,6 +64,16 @@ class OBJECT_OT_add_sphere_at_cursor(bpy.types.Operator):
         bpy.ops.mesh.primitive_uv_sphere_add(location=cursor_location)
         return {'FINISHED'}
 
+class OBJECT_OT_add_ico_sphere_at_cursor(bpy.types.Operator):
+    bl_idname = "mesh.add_ico_sphere_at_cursor"
+    bl_label = "Add Ico Sphere at 3D Cursor"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        cursor_location = context.scene.cursor.location
+        bpy.ops.mesh.primitive_ico_sphere_add(location=cursor_location)
+        return {'FINISHED'}
+
 class PREF_OT_check_for_update(bpy.types.Operator):
     bl_idname = "preferences.check_for_update"
     bl_label = "Check for Addon Update"
@@ -67,13 +86,29 @@ class PREF_OT_check_for_update(bpy.types.Operator):
             current_version = bl_info['version']
 
             if online_version > current_version:
-                self.report({'INFO'}, f"New version available: {online_version}. Updating...")
-                # Download and replace the addon with the new version
-                download_new_version()
+                prefs = context.preferences.addons[__name__].preferences
+                if prefs.auto_update:
+                    self.report({'INFO'}, f"New version available: {online_version}. Updating...")
+                    download_new_version()
+                else:
+                    self.report({'INFO'}, f"New version available: {online_version}. Please update manually.")
             else:
                 self.report({'INFO'}, "Addon is up to date.")
         except Exception as e:
             self.report({'ERROR'}, f"Failed to check for update: {e}")
+
+        return {'FINISHED'}
+
+class PREF_OT_update_to_latest_version(bpy.types.Operator):
+    bl_idname = "preferences.update_to_latest_version"
+    bl_label = "Update to Latest Version"
+
+    def execute(self, context):
+        try:
+            self.report({'INFO'}, "Updating to the latest version...")
+            download_new_version()
+        except Exception as e:
+            self.report({'ERROR'}, f"Failed to update: {e}")
 
         return {'FINISHED'}
 
@@ -98,6 +133,7 @@ def download_new_version():
 def menu_func(self, context):
     self.layout.operator(OBJECT_OT_add_cube_at_cursor.bl_idname, text="Add Cube at Cursor")
     self.layout.operator(OBJECT_OT_add_sphere_at_cursor.bl_idname, text="Add Sphere at Cursor")
+    self.layout.operator(OBJECT_OT_add_ico_sphere_at_cursor.bl_idname, text="Add Ico Sphere at Cursor")
 
 # Function to check updates periodically based on user preference
 def check_for_updates_periodically():
@@ -121,7 +157,9 @@ def check_for_updates_periodically():
 def register():
     bpy.utils.register_class(OBJECT_OT_add_cube_at_cursor)
     bpy.utils.register_class(OBJECT_OT_add_sphere_at_cursor)
+    bpy.utils.register_class(OBJECT_OT_add_ico_sphere_at_cursor)
     bpy.utils.register_class(PREF_OT_check_for_update)
+    bpy.utils.register_class(PREF_OT_update_to_latest_version)
     bpy.utils.register_class(AddonPreferences)
     bpy.types.VIEW3D_MT_mesh_add.append(menu_func)
 
@@ -131,7 +169,9 @@ def register():
 def unregister():
     bpy.utils.unregister_class(OBJECT_OT_add_cube_at_cursor)
     bpy.utils.unregister_class(OBJECT_OT_add_sphere_at_cursor)
+    bpy.utils.unregister_class(OBJECT_OT_add_ico_sphere_at_cursor)
     bpy.utils.unregister_class(PREF_OT_check_for_update)
+    bpy.utils.unregister_class(PREF_OT_update_to_latest_version)
     bpy.utils.unregister_class(AddonPreferences)
     bpy.types.VIEW3D_MT_mesh_add.remove(menu_func)
 
