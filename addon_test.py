@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Add Cube and Sphere at 3D Cursor with Update Feature",
     "blender": (2, 80, 0),  # Minimum Blender version supported
-    "version": (1, 1, 0),   # Current version is 1.1.0
+    "version": (1, 1, 1),   # Current version is 1.1.0
     "category": "Object",
     "description": "Addon to add a cube or sphere at the 3D cursor with update feature",
 }
