@@ -8,11 +8,10 @@ bl_info = {
 
 import bpy
 import requests
+import ast
 
-# Use the provided URLs
-GITHUB_REPO_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/"
-VERSION_FILE_URL = GITHUB_REPO_URL + "version.txt?token=GHSAT0AAAAAACYDQAAROH3TFJVZWPUWAESMZXWG5SA"
-ADDON_FILE_URL = GITHUB_REPO_URL + "addon_test.py?token=GHSAT0AAAAAACYDQAAQZZZTNF6JKEDM7ZXUZXWG5OA"
+# Use the provided raw link for the .py file
+ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAAQZZZTNF6JKEDM7ZXUZXWG5OA"
 
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
@@ -50,11 +49,19 @@ class PREF_OT_check_for_update(bpy.types.Operator):
 
     def execute(self, context):
         try:
-            # Fetch the version from the online version.txt
-            response = requests.get(VERSION_FILE_URL)
-            online_version = tuple(map(int, response.text.strip().split(".")))
-            current_version = bl_info['version']
+            # Fetch the online addon_test.py content
+            response = requests.get(ADDON_FILE_URL)
+            online_code = response.text
 
+            # Parse the online code and extract bl_info
+            online_bl_info = ast.literal_eval(
+                online_code.split("bl_info =")[1].split("\n\n")[0].strip()
+            )
+
+            online_version = tuple(online_bl_info["version"])
+            current_version = bl_info["version"]
+
+            # Compare versions
             if online_version > current_version:
                 self.report({'INFO'}, f"New version available: {online_version}. Please update manually.")
             else:
