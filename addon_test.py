@@ -1,17 +1,18 @@
 bl_info = {
     "name": "Add Cube and Sphere at 3D Cursor with Update Feature",
     "blender": (2, 80, 0),  # Minimum Blender version supported
-    "version": (1, 1, 0),   # Updated version to 1.1
+    "version": (1, 1, 0),   # Current version is 1.1.0
     "category": "Object",
     "description": "Addon to add a cube or sphere at the 3D cursor with update feature",
 }
 
 import bpy
+import os
 import requests
 
 # Use the correct raw links directly
-VERSION_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/version.txt"
-ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py"
+VERSION_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/version.txt?token=GHSAT0AAAAAACYDQAAQ2IINVS4HJPY2SDDQZXWHUTQ"
+ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAARK6BW5NZE6Z574ARSZXWHUSA"
 
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
@@ -20,6 +21,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
         name="Check for Updates",
         description="How often to check for updates",
         items=[
+            ('5_SECONDS', "Every 5 Seconds", ""),
             ('DAILY', "Daily", ""),
             ('WEEKLY', "Weekly", ""),
             ('MONTHLY', "Monthly", ""),
@@ -65,13 +67,33 @@ class PREF_OT_check_for_update(bpy.types.Operator):
             current_version = bl_info['version']
 
             if online_version > current_version:
-                self.report({'INFO'}, f"New version available: {online_version}. Please update manually.")
+                self.report({'INFO'}, f"New version available: {online_version}. Updating...")
+                # Download and replace the addon with the new version
+                download_new_version()
             else:
                 self.report({'INFO'}, "Addon is up to date.")
         except Exception as e:
             self.report({'ERROR'}, f"Failed to check for update: {e}")
 
         return {'FINISHED'}
+
+def download_new_version():
+    try:
+        # Get the path to the current addon file
+        addon_file_path = os.path.join(bpy.utils.user_resource('SCRIPTS'), "addons", "addon_test.py")
+        
+        # Download the updated addon file
+        response = requests.get(ADDON_FILE_URL)
+        with open(addon_file_path, 'wb') as file:
+            file.write(response.content)
+
+        # Reload the addon to apply the update
+        bpy.ops.preferences.addon_disable(module="addon_test")
+        bpy.ops.preferences.addon_enable(module="addon_test")
+
+        print("Addon updated successfully!")
+    except Exception as e:
+        print(f"Error updating addon: {e}")
 
 def menu_func(self, context):
     self.layout.operator(OBJECT_OT_add_cube_at_cursor.bl_idname, text="Add Cube at Cursor")
@@ -82,8 +104,9 @@ def check_for_updates_periodically():
     prefs = bpy.context.preferences.addons[__name__].preferences
     check_interval = prefs.check_interval
 
-    # Convert the interval to seconds (daily, weekly, or monthly)
+    # Convert the interval to seconds (5 seconds, daily, weekly, or monthly)
     interval_seconds = {
+        '5_SECONDS': 5,
         'DAILY': 86400,
         'WEEKLY': 604800,
         'MONTHLY': 2592000
