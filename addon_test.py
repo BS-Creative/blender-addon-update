@@ -1,9 +1,9 @@
 bl_info = {
-    "name": "Add Cube at 3D Cursor with Update Feature",
+    "name": "Add Cube and Sphere at 3D Cursor with Update Feature",
     "blender": (2, 80, 0),  # Minimum Blender version supported
-    "version": (1, 0, 0),   # Current version of the addon
+    "version": (1, 1, 0),   # Updated version to 1.1
     "category": "Object",
-    "description": "Addon to add a cube at the 3D cursor with update feature",
+    "description": "Addon to add a cube or sphere at the 3D cursor with update feature",
 }
 
 import bpy
@@ -43,6 +43,16 @@ class OBJECT_OT_add_cube_at_cursor(bpy.types.Operator):
         bpy.ops.mesh.primitive_cube_add(location=cursor_location)
         return {'FINISHED'}
 
+class OBJECT_OT_add_sphere_at_cursor(bpy.types.Operator):
+    bl_idname = "mesh.add_sphere_at_cursor"
+    bl_label = "Add Sphere at 3D Cursor"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        cursor_location = context.scene.cursor.location
+        bpy.ops.mesh.primitive_uv_sphere_add(location=cursor_location)
+        return {'FINISHED'}
+
 class PREF_OT_check_for_update(bpy.types.Operator):
     bl_idname = "preferences.check_for_update"
     bl_label = "Check for Addon Update"
@@ -64,7 +74,8 @@ class PREF_OT_check_for_update(bpy.types.Operator):
         return {'FINISHED'}
 
 def menu_func(self, context):
-    self.layout.operator(OBJECT_OT_add_cube_at_cursor.bl_idname)
+    self.layout.operator(OBJECT_OT_add_cube_at_cursor.bl_idname, text="Add Cube at Cursor")
+    self.layout.operator(OBJECT_OT_add_sphere_at_cursor.bl_idname, text="Add Sphere at Cursor")
 
 # Function to check updates periodically based on user preference
 def check_for_updates_periodically():
@@ -86,6 +97,7 @@ def check_for_updates_periodically():
 
 def register():
     bpy.utils.register_class(OBJECT_OT_add_cube_at_cursor)
+    bpy.utils.register_class(OBJECT_OT_add_sphere_at_cursor)
     bpy.utils.register_class(PREF_OT_check_for_update)
     bpy.utils.register_class(AddonPreferences)
     bpy.types.VIEW3D_MT_mesh_add.append(menu_func)
@@ -95,6 +107,7 @@ def register():
 
 def unregister():
     bpy.utils.unregister_class(OBJECT_OT_add_cube_at_cursor)
+    bpy.utils.unregister_class(OBJECT_OT_add_sphere_at_cursor)
     bpy.utils.unregister_class(PREF_OT_check_for_update)
     bpy.utils.unregister_class(AddonPreferences)
     bpy.types.VIEW3D_MT_mesh_add.remove(menu_func)
