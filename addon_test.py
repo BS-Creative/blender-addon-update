@@ -1,18 +1,18 @@
 bl_info = {
     "name": "Add Cube at 3D Cursor with Update Feature",
     "blender": (2, 80, 0),
-    "version": (1, 0, 0),
+    "version": (1, 0, 0),  # Update this when you release a new version
     "category": "Object",
     "description": "Addon to add a cube at the 3D cursor with update feature",
 }
 
 import bpy
 import requests
-from bpy.app.timers import register
 
-# Addon URL (replace this with your repository URL and version file path)
-GITHUB_REPO_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAAQGP6D6K22DCAIAFBAZXWGMDA"
-VERSION_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/version.txt?token=GHSAT0AAAAAACYDQAAQUOBOUOUGWYTDEOP6ZXWGO5Q"
+# Use the provided URLs
+GITHUB_REPO_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/"
+VERSION_FILE_URL = GITHUB_REPO_URL + "version.txt?token=GHSAT0AAAAAACYDQAAROH3TFJVZWPUWAESMZXWG5SA"
+ADDON_FILE_URL = GITHUB_REPO_URL + "addon_test.py?token=GHSAT0AAAAAACYDQAAQZZZTNF6JKEDM7ZXUZXWG5OA"
 
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
@@ -50,14 +50,13 @@ class PREF_OT_check_for_update(bpy.types.Operator):
 
     def execute(self, context):
         try:
+            # Fetch the version from the online version.txt
             response = requests.get(VERSION_FILE_URL)
             online_version = tuple(map(int, response.text.strip().split(".")))
             current_version = bl_info['version']
 
             if online_version > current_version:
-                self.report({'INFO'}, f"Update available: {online_version}")
-                # Placeholder for auto-update process
-                # You can add code here to download and replace the current addon files
+                self.report({'INFO'}, f"New version available: {online_version}. Please update manually.")
             else:
                 self.report({'INFO'}, "Addon is up to date.")
         except Exception as e:
