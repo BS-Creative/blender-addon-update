@@ -10,8 +10,8 @@ import bpy
 import requests
 
 # Use the correct raw links directly
-VERSION_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/version.txt?token=GHSAT0AAAAAACYDQAAQ2IINVS4HJPY2SDDQZXWHUTQ"
-ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAARK6BW5NZE6Z574ARSZXWHUSA"
+VERSION_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/version.txt"
+ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py"
 
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
