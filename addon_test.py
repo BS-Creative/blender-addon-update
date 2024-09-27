@@ -11,8 +11,8 @@ import requests
 from bpy.app.timers import register
 
 # Addon URL (replace this with your repository URL and version file path)
-GITHUB_REPO_URL = "https://github.com/franMarz/TexTools-Blender.git"
-VERSION_FILE_URL = GITHUB_REPO_URL + "version.txt"
+GITHUB_REPO_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAAQGP6D6K22DCAIAFBAZXWGMDA"
+VERSION_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/version.txt?token=GHSAT0AAAAAACYDQAAQUOBOUOUGWYTDEOP6ZXWGO5Q"
 
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
