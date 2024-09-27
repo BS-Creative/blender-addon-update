@@ -8,10 +8,10 @@ bl_info = {
 
 import bpy
 import requests
-import ast
+import re
 
 # Use the provided raw link for the .py file
-ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAARGPJQKJGIHW4XDFPSZXWHLGQ"
+ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAAQZZZTNF6JKEDM7ZXUZXWG5OA"
 
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
@@ -53,19 +53,20 @@ class PREF_OT_check_for_update(bpy.types.Operator):
             response = requests.get(ADDON_FILE_URL)
             online_code = response.text
 
-            # Parse the online code and extract bl_info
-            online_bl_info = ast.literal_eval(
-                online_code.split("bl_info =")[1].split("\n\n")[0].strip()
-            )
+            # Extract the bl_info['version'] part from the fetched code using regex
+            version_match = re.search(r"bl_info\s*=\s*{[^}]*'version':\s*\((\d+),\s*(\d+),\s*(\d+)\)", online_code)
+            if version_match:
+                online_version = tuple(map(int, version_match.groups()))
+                current_version = bl_info['version']
 
-            online_version = tuple(online_bl_info["version"])
-            current_version = bl_info["version"]
-
-            # Compare versions
-            if online_version > current_version:
-                self.report({'INFO'}, f"New version available: {online_version}. Please update manually.")
+                # Compare versions
+                if online_version > current_version:
+                    self.report({'INFO'}, f"New version available: {online_version}. Please update manually.")
+                else:
+                    self.report({'INFO'}, "Addon is up to date.")
             else:
-                self.report({'INFO'}, "Addon is up to date.")
+                self.report({'ERROR'}, "Failed to parse the online version.")
+
         except Exception as e:
             self.report({'ERROR'}, f"Failed to check for update: {e}")
 
