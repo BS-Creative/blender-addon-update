@@ -1,17 +1,17 @@
 bl_info = {
     "name": "Add Cube at 3D Cursor with Update Feature",
-    "blender": (2, 80, 0),
-    "version": (1, 0, 0),  # Update this when you release a new version
+    "blender": (2, 80, 0),  # Minimum Blender version supported
+    "version": (1, 0, 0),   # Current version of the addon
     "category": "Object",
     "description": "Addon to add a cube at the 3D cursor with update feature",
 }
 
 import bpy
 import requests
-import re
 
-# Use the provided raw link for the .py file
-ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAAQ7GPVK5IRYSFLWD5CZXWHN2Q"
+# Use the correct raw links directly
+VERSION_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/version.txt?token=GHSAT0AAAAAACYDQAAQ2IINVS4HJPY2SDDQZXWHUTQ"
+ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAARK6BW5NZE6Z574ARSZXWHUSA"
 
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
@@ -49,24 +49,15 @@ class PREF_OT_check_for_update(bpy.types.Operator):
 
     def execute(self, context):
         try:
-            # Fetch the online addon_test.py content
-            response = requests.get(ADDON_FILE_URL)
-            online_code = response.text
+            # Fetch the version from the online version.txt
+            response = requests.get(VERSION_FILE_URL)
+            online_version = tuple(map(int, response.text.strip().split(".")))
+            current_version = bl_info['version']
 
-            # Extract the bl_info['version'] part from the fetched code using regex
-            version_match = re.search(r"bl_info\s*=\s*{[^}]*'version':\s*\((\d+),\s*(\d+),\s*(\d+)\)", online_code)
-            if version_match:
-                online_version = tuple(map(int, version_match.groups()))
-                current_version = bl_info['version']
-
-                # Compare versions
-                if online_version > current_version:
-                    self.report({'INFO'}, f"New version available: {online_version}. Please update manually.")
-                else:
-                    self.report({'INFO'}, "Addon is up to date.")
+            if online_version > current_version:
+                self.report({'INFO'}, f"New version available: {online_version}. Please update manually.")
             else:
-                self.report({'ERROR'}, "Failed to parse the online version.")
-
+                self.report({'INFO'}, "Addon is up to date.")
         except Exception as e:
             self.report({'ERROR'}, f"Failed to check for update: {e}")
 
