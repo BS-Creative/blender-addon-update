@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Add Cube, Sphere, and Ico Sphere with Update Feature",
     "blender": (2, 80, 0),  # Minimum Blender version supported
-    "version": (1, 4, 0),   # Updated version to 1.2
+    "version": (1, 2, 1),   # Updated version to 1.2.1
     "category": "Object",
     "description": "Addon to add a cube, sphere, and ico sphere at the 3D cursor with update feature",
 }
@@ -9,6 +9,7 @@ bl_info = {
 import bpy
 import os
 import requests
+import traceback
 
 # Use the correct raw links directly
 VERSION_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/version.txt?token=GHSAT0AAAAAACYDQAAQ2IINVS4HJPY2SDDQZXWHUTQ"
@@ -106,6 +107,7 @@ class PREF_OT_check_for_update(bpy.types.Operator):
                 self.report({'INFO'}, "Addon is up to date.")
         except Exception as e:
             self.report({'ERROR'}, f"Failed to check for update: {e}")
+            traceback.print_exc()
 
         # Force the preferences panel to update
         context.preferences.addons[__name__].preferences.update_tag()
@@ -122,6 +124,7 @@ class PREF_OT_update_to_latest_version(bpy.types.Operator):
             download_new_version()
         except Exception as e:
             self.report({'ERROR'}, f"Failed to update: {e}")
+            traceback.print_exc()
 
         return {'FINISHED'}
 
@@ -135,13 +138,10 @@ def download_new_version():
         with open(addon_file_path, 'wb') as file:
             file.write(response.content)
 
-        # Reload the addon to apply the update
-        bpy.ops.preferences.addon_disable(module="addon_test")
-        bpy.ops.preferences.addon_enable(module="addon_test")
-
-        print("Addon updated successfully!")
+        print("Addon updated successfully! Please restart Blender to apply the update.")
     except Exception as e:
         print(f"Error updating addon: {e}")
+        traceback.print_exc()
 
 def menu_func(self, context):
     self.layout.operator(OBJECT_OT_add_cube_at_cursor.bl_idname, text="Add Cube at Cursor")
