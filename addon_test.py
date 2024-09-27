@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Add Cube, Sphere, and Ico Sphere with Update Feature",
     "blender": (2, 80, 0),  # Minimum Blender version supported
-    "version": (1, 2, 1),   # Updated version to 1.2
+    "version": (1, 2, 0),   # Updated version to 1.2
     "category": "Object",
     "description": "Addon to add a cube, sphere, and ico sphere at the 3D cursor with update feature",
 }
@@ -13,6 +13,9 @@ import requests
 # Use the correct raw links directly
 VERSION_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/version.txt?token=GHSAT0AAAAAACYDQAAQ2IINVS4HJPY2SDDQZXWHUTQ"
 ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAARK6BW5NZE6Z574ARSZXWHUSA"
+
+# Global variable to track if an update is available
+update_available = False
 
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
@@ -36,12 +39,16 @@ class AddonPreferences(bpy.types.AddonPreferences):
     )
 
     def draw(self, context):
+        global update_available
         layout = self.layout
         layout.label(text="Update Preferences")
         layout.prop(self, "auto_update")
         layout.prop(self, "check_interval")
-        if not self.auto_update:
+
+        # Only show the "Update to Latest Version" button if an update is available
+        if not self.auto_update and update_available:
             layout.operator("preferences.update_to_latest_version", text="Update to Latest Version", icon='FILE_REFRESH')
+        
         layout.operator("preferences.check_for_update", text="Check for Updates")
 
 class OBJECT_OT_add_cube_at_cursor(bpy.types.Operator):
@@ -79,6 +86,7 @@ class PREF_OT_check_for_update(bpy.types.Operator):
     bl_label = "Check for Addon Update"
 
     def execute(self, context):
+        global update_available
         try:
             # Fetch the version from the online version.txt
             response = requests.get(VERSION_FILE_URL)
@@ -87,15 +95,20 @@ class PREF_OT_check_for_update(bpy.types.Operator):
 
             if online_version > current_version:
                 prefs = context.preferences.addons[__name__].preferences
+                update_available = True  # Mark update as available
                 if prefs.auto_update:
                     self.report({'INFO'}, f"New version available: {online_version}. Updating...")
                     download_new_version()
                 else:
                     self.report({'INFO'}, f"New version available: {online_version}. Please update manually.")
             else:
+                update_available = False  # No update needed
                 self.report({'INFO'}, "Addon is up to date.")
         except Exception as e:
             self.report({'ERROR'}, f"Failed to check for update: {e}")
+
+        # Force the preferences panel to update
+        context.preferences.addons[__name__].preferences.update_tag()
 
         return {'FINISHED'}
 
@@ -137,6 +150,9 @@ def menu_func(self, context):
 
 # Function to check updates periodically based on user preference
 def check_for_updates_periodically():
+    bpy.ops.preferences.check_for_update()
+
+    # Schedule the next check based on user preferences
     prefs = bpy.context.preferences.addons[__name__].preferences
     check_interval = prefs.check_interval
 
@@ -148,10 +164,6 @@ def check_for_updates_periodically():
         'MONTHLY': 2592000
     }[check_interval]
 
-    # Check for updates
-    bpy.ops.preferences.check_for_update()
-
-    # Schedule next check
     return interval_seconds
 
 def register():
