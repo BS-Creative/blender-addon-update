@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Add Cube, Sphere, and Ico Sphere with Update Feature",
     "blender": (2, 80, 0),  # Minimum Blender version supported
-    "version": (1, 2, 1),   # Updated version to 1.2.1
+    "version": (1, 2, 2),   # Updated version to 1.2.2
     "category": "Object",
     "description": "Addon to add a cube, sphere, and ico sphere at the 3D cursor with update feature",
 }
@@ -108,9 +108,6 @@ class PREF_OT_check_for_update(bpy.types.Operator):
         except Exception as e:
             self.report({'ERROR'}, f"Failed to check for update: {e}")
             traceback.print_exc()
-
-        # Force the preferences panel to update
-        context.preferences.addons[__name__].preferences.update_tag()
 
         return {'FINISHED'}
 
