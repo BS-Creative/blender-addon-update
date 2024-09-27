@@ -11,7 +11,7 @@ import requests
 import re
 
 # Use the provided raw link for the .py file
-ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAAQZZZTNF6JKEDM7ZXUZXWG5OA"
+ADDON_FILE_URL = "https://raw.githubusercontent.com/BS-Creative/blender-addon-update/refs/heads/main/addon_test.py?token=GHSAT0AAAAAACYDQAAQ7GPVK5IRYSFLWD5CZXWHN2Q"
 
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __name__
