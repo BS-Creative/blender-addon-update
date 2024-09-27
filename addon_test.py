@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Add Cube, Sphere, and Ico Sphere with Update Feature",
     "blender": (2, 80, 0),  # Minimum Blender version supported
-    "version": (1, 2, 0),   # Updated version to 1.2
+    "version": (1, 4, 0),   # Updated version to 1.2
     "category": "Object",
     "description": "Addon to add a cube, sphere, and ico sphere at the 3D cursor with update feature",
 }
